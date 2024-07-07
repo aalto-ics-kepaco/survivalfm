@@ -30,10 +30,10 @@ The following example will demonstrate the usage of *survivalFM*.
 This example uses the publicly available `gbsg` breast cancer survival dataset from the `survival` package. The gbsg data set contains patient records from a 1984-1989 trial conducted by the German Breast Cancer Study Group (GBSG) of 720 patients with node positive breast cancer; it includes 686 patients with complete data on the prognostic variables.
 
 
-In the example below, we will use `fit.survivalfm()` function, which automatically optimizes the regularization parameters `lambda1` (linear effects) and `lambda2` (factorized interaction parameters). 
-
+In the example below, we will use `fit.survivalfm()` function, which automatically optimizes the regularization parameters `lambda1` (linear effects) and `lambda2` (factorized interaction parameters) using a validation set taken from the training data. User only needs to specify the input parameter `rank`, which is the rank defining the dimensionality of the factorization for the interaction parameters. See also the function documentation `?fit.survivalfm` for further information. 
 
 It is recommended to use multiple cores, if available, to parallelize the optimization process. This can be done by registering the parallel backend using e.g. the `parallel`package, as demonstrated in the example below. 
+
 
 
 ```r
