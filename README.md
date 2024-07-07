@@ -72,12 +72,18 @@ X_test_scaled <- X_test %>%
 
 ### Training survivalFM ###
 
+cluster <- parallel::makeForkCluster(5, type = "FORK")
+doParallel::registerDoParallel(cl = cluster)
+
 # Fit survivalFM model
 fit <- survivalfm::fit.survivalfm(
   x = X_train_scaled,
   y = y_train,
-  rank = 3
+  rank = 3,
+  parallel = TRUE
 )
+
+parallel::stopCluster(cluster)
 
 ### Predicting on the test set ###
 
