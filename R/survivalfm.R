@@ -1,3 +1,6 @@
+#' @useDynLib survivalfm
+#' @importFrom Rcpp sourceCpp
+
 #' Fit survivalFM with specified parameters
 #'
 #' This function fits a survivalFM model, given specified input parameters. If
