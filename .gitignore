@@ -7,4 +7,3 @@ src/*.so
 src/*.dll
 *.Rproj
 *.DS_Store
-*RcppExports*
