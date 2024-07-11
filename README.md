@@ -102,6 +102,7 @@ linear_effects <- fit$beta %>% sort()
 # Interaction effects
 interaction_effects <- fit$PP
 
+# Example visualization using pheatmap
 pheatmap::pheatmap(
   mat = as.matrix(interaction_effects),
   cellheight = 10,
