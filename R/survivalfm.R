@@ -88,7 +88,11 @@ survivalfm <- function(
     coefficients <- w
     VV <- NULL
   }
-
+  
+  if (optim_res$convergence != 0) {
+    warning("Convergence not reached, consider increasing maxiter. ")
+  }
+  
   return(
     structure(
       list(
