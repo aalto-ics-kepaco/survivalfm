@@ -26,6 +26,7 @@
 #'   interaction effects are contained in \code{coefficients}.
 #'
 #' @export survivalfm
+#' @importFrom stats optim
 survivalfm <- function(
     x,
     y,
@@ -55,15 +56,15 @@ survivalfm <- function(
   params <- .flatten_parameters(w, V, interaction_terms)
   cache$last_params <- NULL
 
-  optim_res <-
-    stats::optim(
+  optim.res <-
+    optim(
       par =  params,
       fn = function(params) .loss_function(params, X, time, status, lambda1, lambda2, interaction_terms),
       gr = function(params) .gradient_function(params, X, time, status, lambda1, lambda2, interaction_terms),
       control = list(trace = trace, maxit = maxiter, reltol = reltol),
       method = optimization_method)
 
-  optimized_params <- optim_res$par
+  optimized_params <- optim.res$par
 
   parameters <- .restore_parameters(optimized_params, n_features, interaction_terms)
 
@@ -89,7 +90,7 @@ survivalfm <- function(
     VV <- NULL
   }
   
-  if (optim_res$convergence != 0) {
+  if (optim.res$convergence != 0) {
     warning("Convergence not reached, consider increasing maxiter. ")
   }
   
@@ -101,7 +102,7 @@ survivalfm <- function(
         P = V,
         PP = VV,
         coefficients = coefficients,
-        optim_res = optim_res
+        optim.res = optim.res
       ),
       class = c("survivalfm")
     )

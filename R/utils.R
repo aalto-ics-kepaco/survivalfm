@@ -1,5 +1,4 @@
 
-
 basesurv <- function(time, event, lp, times.eval = NULL){
   if (is.null(times.eval))
     times.eval <- sort(unique(time))
@@ -134,6 +133,7 @@ basesurv <- function(time, event, lp, times.eval = NULL){
 
 .stratified_split <- function(y, val_frac) {
 
+  set.seed(123)
   train_frac <- 1 - val_frac
   train_indices <- numeric(0)
   val_indices <- numeric(0)
