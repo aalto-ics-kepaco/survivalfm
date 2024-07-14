@@ -12,9 +12,11 @@ fit.survivalfm(
   nlambda = 20,
   lambda.min = 1e-04,
   lambda.max = 1,
-  lambda_equal = T,
+  lambda_equal = FALSE,
   lambda1_range = NULL,
   lambda2_range = NULL,
+  early_stopping = TRUE,
+  val_idx = NULL,
   maxiter = 1000,
   reltol = sqrt(.Machine$double.eps),
   parallel = FALSE,
@@ -58,7 +60,7 @@ regularization parameters reduces the number of potential parameter
 combinations to search and can therefore speed up the optimization process.
 However, in some cases it might be desired to allow differing
 regularization strengths for the linear and the interaction part, in which
-case this should be set to \code{FALSE}. Default is \code{TRUE}.}
+case this should be set to \code{FALSE}. Default is \code{FALSE}.}
 
 \item{lambda1_range}{Custom range of values for the regularization parameter
 \code{lambda1} to be optimized (regularization for the linear terms;
@@ -68,6 +70,12 @@ a logarithmic scale between 1 and 0.0001.}
 \item{lambda2_range}{Custom range of values for the regularization parameter
 \code{lambda2} to be optimized (regularization for the factorized
 interaction terms; optional).}
+
+\item{early_stopping}{Stop early if further decreasing lambda2 does not
+improve performance (default = TRUE).}
+
+\item{val_idx}{Row indices to be used as the validation set. If not set, the
+function will randomly sample a validation set from the training data.}
 
 \item{maxiter}{Maximum number of iterations over the data for all
 regularization parameter values. Default is 1000.}

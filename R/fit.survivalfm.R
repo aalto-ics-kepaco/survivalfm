@@ -46,7 +46,7 @@
 #'   combinations to search and can therefore speed up the optimization process.
 #'   However, in some cases it might be desired to allow differing
 #'   regularization strengths for the linear and the interaction part, in which
-#'   case this should be set to \code{FALSE}. Default is \code{TRUE}.
+#'   case this should be set to \code{FALSE}. Default is \code{FALSE}.
 #' @param lambda1_range Custom range of values for the regularization parameter
 #'   \code{lambda1} to be optimized (regularization for the linear terms;
 #'   optional). By default, the function will create 50 equally spaced values in
@@ -54,6 +54,10 @@
 #' @param lambda2_range Custom range of values for the regularization parameter
 #'   \code{lambda2} to be optimized (regularization for the factorized
 #'   interaction terms; optional).
+#' @param early_stopping Stop early if further decreasing lambda2 does not
+#'    improve performance (default = TRUE).
+#' @param val_idx Row indices to be used as the validation set. If not set, the
+#'   function will randomly sample a validation set from the training data.
 #' @param maxiter Maximum number of iterations over the data for all
 #'   regularization parameter values. Default is 1000.
 #' @param reltol Relative convergence tolerance for the optimization method in
@@ -89,22 +93,24 @@ fit.survivalfm <- function(
     nlambda = 20,
     lambda.min = 1e-4,
     lambda.max = 1,
-    lambda_equal = T,
+    lambda_equal = FALSE,
     lambda1_range = NULL,
     lambda2_range = NULL,
+    early_stopping = TRUE,
+    val_idx = NULL,
     maxiter = 1000,
     reltol = sqrt(.Machine$double.eps),
     parallel = FALSE,
     trace = 0,
     optimization_method = "BFGS"
-    ) {
-
+) {
+  
   if (parallel) {
     if (!requireNamespace("foreach", quietly = TRUE)) {
       stop("The 'foreach' package is needed for the parallel computation to work. Please install it using install.packages('foreach')")
     }
   }
-
+  
   stopifnot("x and y must have the same number of samples" = nrow(x) == length(y))
   stopifnot("lambda.min must be positive" = lambda.min > 0)
   stopifnot("lambda.max must be positive" = lambda.max > 0)
@@ -112,118 +118,145 @@ fit.survivalfm <- function(
   stopifnot("rank must be a positive integer" = (rank%%1 == 0 & rank > 0))
   stopifnot("frac must be a positive number between 0 and 1" = (frac > 0 & frac <= 1))
   stopifnot("x must be complete" = sum(stats::complete.cases(x)) == nrow(x))
-
-  split <- .stratified_split(y[,"status"], frac)
-  train_idx <- split$train
-  val_idx <- split$val
-
-
+  
+  if (is.null(val_idx)) {
+    split <- .stratified_split(y[,"status"], frac)
+    train_idx <- split$train
+    val_idx <- split$val
+  } else {
+    train_idx <- setdiff(1:nrow(x), val_idx)
+  }
+  
   if (is.null(lambda1_range)) {
     lambda1_range <- exp(seq(log(lambda.max), log(lambda.min), length.out = nlambda))
   }
-
+  
   if (is.null(lambda2_range)) {
     lambda2_range <- exp(seq(log(lambda.max), log(lambda.min), length.out = nlambda))
   }
-
-  param_combinations <-
-    expand.grid(
-      lambda1 = lambda1_range,
-      lambda2 = lambda2_range
-    )
-
-  if (lambda_equal) {
-    param_combinations <- param_combinations[param_combinations$lambda1 == param_combinations$lambda2,]
-  }
-
-  param_combinations <- param_combinations[order(-(param_combinations$lambda1 + param_combinations$lambda2)),]
-
-  val.results <- data.frame()
-
-
+  
   if (trace == 1) {
     print(paste0("Using ", frac * 100, "% validation set to optimize regularization parameters..."))
-    pb = txtProgressBar(min = 0, max = nrow(param_combinations), initial = 0)
+    pb = txtProgressBar(min = 0, max = length(lambda2_range), initial = 0)
   }
-
-
+  
+  lambda2_range <- lambda2_range[order(-lambda2_range)]
+  
+  val.results <- data.frame()
+  
   if (parallel) {
-    val.results <- foreach(param_idx = 1:nrow(param_combinations), .combine = 'rbind', .inorder = FALSE) %dopar% {
-
-      param_comb <- param_combinations[param_idx,]
-
-      fit <- survivalfm(
-        x = x[train_idx, ],
-        y = y[train_idx, ],
-        lambda1 = param_comb$lambda1,
-        lambda2 = param_comb$lambda2,
-        rank = rank,
-        maxiter = maxiter,
-        reltol = reltol,
-        optimization_method = optimization_method
-      )
-
-      lp <- predict.survivalfm(fit, as.matrix(x[val_idx,]), type = "link")
-      cindex <- survival::concordance(y[val_idx, ] ~ lp, reverse = T)$concordance
-
-      if (trace == 1) {setTxtProgressBar(pb, param_idx)}
-
-      return(
-        data.frame(
-          "lambda1" = param_comb$lambda1,
-          "lambda2" = param_comb$lambda2,
-          "cindex.val" = cindex,
-          "fit" = I(list(fit))
+    
+    for (lambda2 in lambda2_range) {
+      
+      sub.results <- foreach(
+        lambda1 = lambda1_range, 
+        .combine = 'rbind', 
+        .inorder = FALSE
+      ) %dopar% {
+        
+        fit <- survivalfm(
+          x = x[train_idx, ],
+          y = y[train_idx, ],
+          lambda1 = lambda1,
+          lambda2 = lambda2,
+          rank = rank,
+          maxiter = maxiter,
+          reltol = reltol,
+          optimization_method = optimization_method
         )
-      )
-    }
-  } else {
-    val.results <- data.frame()
-    for (param_idx in 1:nrow(param_combinations)) {
-
-      param_comb <- param_combinations[param_idx,]
-
-      fit <- survivalfm(
-        x = x[train_idx, ],
-        y = y[train_idx, ],
-        lambda1 = param_comb$lambda1,
-        lambda2 = param_comb$lambda2,
-        rank = rank,
-        maxiter = maxiter,
-        reltol = reltol,
-        optimization_method = optimization_method
-      )
-
-      lp <- predict.survivalfm(fit, as.matrix(x[val_idx,]), type = "link")
-      cindex <- survival::concordance(y[val_idx, ] ~ lp, reverse = T)$concordance
-
-
-      val.results <-
-        rbind(
-          val.results,
+        
+        lp <- predict.survivalfm(fit, as.matrix(x[val_idx,]), type = "link")
+        cindex <- survival::concordance(y[val_idx, ] ~ lp, reverse = T)$concordance
+        
+        return(
           data.frame(
-            "lambda1" = param_comb$lambda1,
-            "lambda2" = param_comb$lambda2,
+            "lambda1" = lambda1,
+            "lambda2" = lambda2,
             "cindex.val" = cindex,
             "fit" = I(list(fit))
           )
         )
-      if (trace == 1) {setTxtProgressBar(pb, param_idx)}
+      }
+      
+      if (trace == 1) {setTxtProgressBar(pb, which(lambda2_range == lambda2))}
+      
+      if (early_stopping & nrow(val.results) > 0) {
+        # Stop early if decreasing lambda2 did not improve performance on the last round
+        if (round(max(sub.results$cindex.val), 2) < round(max(val.results$cindex.val), 2)) {
+          val.results <- rbind(val.results, sub.results)
+          break
+        }
+      }
+      
+      val.results <- rbind(val.results, sub.results)
+      
+      
+    }
+    
+  } else {
+    
+    val.results <- data.frame()
+    
+    for (lambda2 in lambda2_range) {
+      
+      sub.results <- data.frame()
+      
+      for (lambda1 in lambda1_range) {
+        
+        fit <- survivalfm(
+          x = x[train_idx, ],
+          y = y[train_idx, ],
+          lambda1 = lambda1,
+          lambda2 = lambda2,
+          rank = rank,
+          maxiter = maxiter,
+          reltol = reltol,
+          optimization_method = optimization_method
+        )
+        
+        lp <- predict.survivalfm(fit, as.matrix(x[val_idx,]), type = "link")
+        cindex <- survival::concordance(y[val_idx, ] ~ lp, reverse = T)$concordance
+        
+        
+        sub.results <-
+          rbind(
+            sub.results,
+            data.frame(
+              "lambda1" = lambda1,
+              "lambda2" = lambda2,
+              "cindex.val" = cindex,
+              "fit" = I(list(fit))
+            )
+          )
+        
+      }
+      
+      if (trace == 1) {setTxtProgressBar(pb, which(lambda2_range == lambda2))}
+      
+      if (early_stopping & nrow(val.results) > 1) {
+        # Stop early if decreasing lambda2 did not improve performance on the last round
+        if (round(max(sub.results$cindex.val), 2) < round(max(val.results$cindex.val), 2)) {
+          val.results <- rbind(val.results, sub.results)
+          break
+        }
+      }
+      
+      val.results <- rbind(val.results, sub.results)
     }
   }
-
+    
   if (trace == 1) {close(pb)}
-
+  
   best_params <- val.results[which.max(val.results$cindex.val)[1],]
   best_lambda1 <- best_params$lambda1
   best_lambda2 <- best_params$lambda2
-
+  
   if (trace == 1) {
     print(paste0("Best lambda1: ", best_lambda1))
     print(paste0("Best lambda2: ", best_lambda2))
     print("Training final model...")
   }
-
+  
   fit <- survivalfm(
     x = x,
     y = y,
@@ -235,7 +268,7 @@ fit.survivalfm <- function(
     reltol = reltol,
     optimization_method = optimization_method
   )
-
+  
   return(
     structure(
       list(
@@ -244,11 +277,12 @@ fit.survivalfm <- function(
         P = fit$P,
         PP = fit$PP,
         coefficients = fit$coefficients,
+        optim.res = fit$optim.res,
         val.results = val.results
       ),
       class = c("fit.survivalfm", "survivalfm")
     )
   )
-
+  
 }
 
