@@ -7,7 +7,7 @@ Authors@R:
 Description: Efficient modelling of linear and pairwise interaction terms in proportional hazards survival models using factorized parametrization for interaction terms.
 Imports: utils, stats, foreach, survival, Rcpp
 NeedsCompilation: yes
-License: MIT + file LICENSE
+License: MIT
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3

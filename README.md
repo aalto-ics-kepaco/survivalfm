@@ -4,18 +4,20 @@
 
 *survivalFM* is an R package designed for efficient modelling of linear and all potential pairwise interaction terms among input predictors in proportional hazards survival models. 
 
-*survivalFM* relies on learning a low-rank factorized representation of the interaction terms, hence overcoming the computational and statistical limitations of directly fitting these terms in the presence of many input variables. The factorization of the interaction parameters, together with an efficient quasi-Newton optimization algorithm, for the first time facilitates a systematic exploration of all potential interaction effects across covariates in multivariable time-to-event prediction models involving many predictors.  The resulting model is fully interpretable, providing  access to both individual feature coefficients and those of the approximated interaction terms. 
+*survivalFM* relies on learning a low-rank factorized representation of the interaction terms, hence overcoming the computational and statistical limitations of directly fitting these terms in the presence of many input variables. The factorization of the interaction parameters, together with an efficient quasi-Newton optimization algorithm, facilitates a systematic exploration of all potential interaction effects across covariates in multivariable time-to-event prediction models involving many predictors.  The resulting model is fully interpretable, providing  access to both individual feature coefficients and those of the approximated interaction terms. 
 
 
 ## Installation
 
 
-This package can be installed in R with the following command:
+This package can be installed in R with the following command (installation may take a few minutes):
 
 ```r
 require(devtools)
 devtools::install_github("https://github.com/aalto-ics-kepaco/survivalfm")
 ```
+
+The software has been tested with R version 4.3.1.
 
 ## Citation
 
@@ -25,7 +27,9 @@ Heli Julkunen and Juho Rousu. "Machine learning for comprehensive interaction mo
 
 ## Usage example
 
-The following example will demonstrate the usage of *survivalFM* on an example breast cancer survival dataset. 
+The following example will demonstrate the usage of *survivalFM* on a small example breast cancer survival dataset. This demo is expected to run within a few seconds.
+
+Running the example requires installation of R packages `tidyverse`, `survival`, `doParallel` and `parallel` (for parallel execution, optional) and `pheatmap` (for visualization). 
 
 
 ### Preprocessing example dataset 
@@ -37,8 +41,6 @@ This example uses the publicly available `gbsg` breast cancer survival dataset f
 # Load required libraries
 library(tidyverse)
 library(survival)
-library(glmnet)
-library(foreach)
 library(pheatmap)
 
 ### Preparing data ###
