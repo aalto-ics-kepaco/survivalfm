@@ -36,7 +36,8 @@ survivalfm <- function(
     maxiter = 1000,
     reltol = sqrt(.Machine$double.eps),
     trace = 0,
-    optimization_method = "BFGS") {
+    optimization_method = "BFGS"
+    ) {
 
   inputs <- .process_input(x, y)
   X <- inputs$X
@@ -48,12 +49,12 @@ survivalfm <- function(
   n_features <- ncol(X)
 
   # Initialize parameters
-  w <- matrix(stats::rnorm(n_features, mean = 0, sd = 0.001), nrow = n_features, ncol = 1)
-  V <- if (interaction_terms) matrix(stats::rnorm(n_features * rank, mean = 0, sd = 0.001), nrow = n_features, ncol = rank)
+  beta <- matrix(stats::rnorm(n_features, mean = 0, sd = 0.001), nrow = n_features, ncol = 1)
+  P <- if (interaction_terms) matrix(stats::rnorm(n_features * rank, mean = 0, sd = 0.001), nrow = n_features, ncol = rank)
 
   # Cache computations shared by the gradient and loss function
   cache <<- new.env()
-  params <- .flatten_parameters(w, V, interaction_terms)
+  params <- .flatten_parameters(beta, P, interaction_terms)
   cache$last_params <- NULL
 
   optim.res <-
@@ -65,29 +66,29 @@ survivalfm <- function(
       method = optimization_method)
 
   optimized_params <- optim.res$par
-
+  
   parameters <- .restore_parameters(optimized_params, n_features, interaction_terms)
 
-  w <- parameters$w
-  V <- parameters$V
+  beta <- parameters$beta
+  P <- parameters$P
 
   feat_names = colnames(X)
-  names(w) = feat_names
+  names(beta) = feat_names
 
-  if (!is.null(V)) {
-    rownames(V) = feat_names
-    colnames(V) = paste0("rank", 1:rank)
-    VV <- V %*% t(V)
-    diag(VV) = NA
-    V_list <- VV[upper.tri(VV, diag = FALSE)]
-    VV_names <- outer(feat_names, feat_names, FUN = function(x, y) paste(x, "*", y, sep = ""))
-    VV_names <- VV_names[upper.tri(VV_names, diag = FALSE)]
-    names(VV) = VV_names
-    names(V_list) = VV_names
-    coefficients <- c(w, V_list)
+  if (!is.null(P)) {
+    rownames(P) = feat_names
+    colnames(P) = paste0("rank", 1:rank)
+    PP <- P %*% t(P)
+    diag(PP) = NA
+    P_list <- PP[upper.tri(PP, diag = FALSE)]
+    PP_names <- outer(feat_names, feat_names, FUN = function(x, y) paste(x, "*", y, sep = ""))
+    PP_names <- PP_names[upper.tri(PP_names, diag = FALSE)]
+    names(PP) = PP_names
+    names(P_list) = PP_names
+    coefficients <- c(beta, P_list)
   } else {
-    coefficients <- w
-    VV <- NULL
+    coefficients <- beta
+    PP <- NULL
   }
   
   if (optim.res$convergence != 0) {
@@ -98,9 +99,9 @@ survivalfm <- function(
     structure(
       list(
         Call = match.call(),
-        beta = w,
-        P = V,
-        PP = VV,
+        beta = beta,
+        P = P,
+        PP = PP,
         coefficients = coefficients,
         optim.res = optim.res
       ),

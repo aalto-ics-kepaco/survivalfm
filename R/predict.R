@@ -11,7 +11,7 @@
 #'   
 #' @export predict.survivalfm 
 predict.survivalfm <- function(object, newx, type = "link") {
-  stopifnot("must be a survivalFM object" = class(object) %in% c("survivalfm", "fit.survivalfm"))
+  stopifnot("must be a survivalFM object" = class(object) %in% c("survivalfm", "val.survivalfm", "cv.survivalfm"))
   
   beta = object$beta
   P= object$P
