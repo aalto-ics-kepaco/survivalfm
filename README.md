@@ -73,12 +73,12 @@ X_test_scaled <- X_test %>%
 ### Training survivalFM model
  
 
-In the example below, we will use `fit.survivalfm()` function, which automatically optimizes the regularization parameters `lambda1` (linear effects) and `lambda2` (factorized interaction parameters) using a validation set taken from the training data. User only needs to specify the input parameter `rank`, which is the rank defining the dimensionality of the factorization for the interaction parameters. See also the function documentation `?fit.survivalfm` for further information.
+In the example below, we will use `val.survivalfm()` function, which automatically optimizes the regularization parameters `lambda1` (linear effects) and `lambda2` (factorized interaction parameters) using a validation set taken from the training data. Alternatively, one can use `cv.survivalfm()`, which automatically optimizes the regularization parameters using cross-validation. User only needs to specify the input parameter `rank`, which is the rank defining the dimensionality of the factorization for the interaction parameters. See also the function documentation `?val.survivalfm` for further information.
 
 It is recommended to use multiple cores, if available, to parallelize the optimization process. This can be done by registering the parallel backend using e.g. the `parallel`package, as demonstrated in the example below. 
 
 
-
+Using a validation set approach for optimizing regularization parameters: 
 ```r
 library(doParallel)
 library(parallel)
@@ -89,10 +89,34 @@ cl <- makeCluster(numCores - 1)
 registerDoParallel(cl)
 
 # Fit survivalFM model
-fit <- survivalfm::fit.survivalfm(
+fit <- survivalfm::val.survivalfm(
   x = X_train_scaled,
   y = y_train,
   rank = 3,
+  trace = T,
+  parallel = TRUE
+)
+
+parallel::stopCluster(cl)
+```
+
+
+Using a cross-validation approach for optimizing regularization parameters: 
+```r
+library(doParallel)
+library(parallel)
+library(survivalfm)
+
+numCores <-detectCores()
+cl <- makeCluster(numCores - 1)
+registerDoParallel(cl)
+
+# Fit survivalFM model
+fit <- survivalfm::cv.survivalfm(
+  x = X_train_scaled,
+  y = y_train,
+  rank = 3,
+  trace = T,
   parallel = TRUE
 )
 

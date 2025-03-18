@@ -12,17 +12,17 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // predict_cpp
-Eigen::VectorXd predict_cpp(Eigen::MatrixXd X, Eigen::VectorXd w, Eigen::MatrixXd V, Eigen::MatrixXd XV, bool fit_interactions);
-RcppExport SEXP _survivalfm_predict_cpp(SEXP XSEXP, SEXP wSEXP, SEXP VSEXP, SEXP XVSEXP, SEXP fit_interactionsSEXP) {
+Eigen::VectorXd predict_cpp(Eigen::MatrixXd X, Eigen::VectorXd beta, Eigen::MatrixXd P, Eigen::MatrixXd XP, bool fit_interactions);
+RcppExport SEXP _survivalfm_predict_cpp(SEXP XSEXP, SEXP betaSEXP, SEXP PSEXP, SEXP XPSEXP, SEXP fit_interactionsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Eigen::MatrixXd >::type X(XSEXP);
-    Rcpp::traits::input_parameter< Eigen::VectorXd >::type w(wSEXP);
-    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type V(VSEXP);
-    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type XV(XVSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type P(PSEXP);
+    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type XP(XPSEXP);
     Rcpp::traits::input_parameter< bool >::type fit_interactions(fit_interactionsSEXP);
-    rcpp_result_gen = Rcpp::wrap(predict_cpp(X, w, V, XV, fit_interactions));
+    rcpp_result_gen = Rcpp::wrap(predict_cpp(X, beta, P, XP, fit_interactions));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -40,8 +40,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // regularized_negative_log_likelihood
-double regularized_negative_log_likelihood(const Eigen::VectorXi status, const Eigen::VectorXd time, const Eigen::VectorXd lp, const Eigen::VectorXd cumsum_exp_lp, const Eigen::MatrixXd V, const Eigen::VectorXd w, double lambda1, double lambda2, bool fit_interactions);
-RcppExport SEXP _survivalfm_regularized_negative_log_likelihood(SEXP statusSEXP, SEXP timeSEXP, SEXP lpSEXP, SEXP cumsum_exp_lpSEXP, SEXP VSEXP, SEXP wSEXP, SEXP lambda1SEXP, SEXP lambda2SEXP, SEXP fit_interactionsSEXP) {
+double regularized_negative_log_likelihood(const Eigen::VectorXi status, const Eigen::VectorXd time, const Eigen::VectorXd lp, const Eigen::VectorXd cumsum_exp_lp, const Eigen::MatrixXd P, const Eigen::VectorXd beta, double lambda1, double lambda2, bool fit_interactions);
+RcppExport SEXP _survivalfm_regularized_negative_log_likelihood(SEXP statusSEXP, SEXP timeSEXP, SEXP lpSEXP, SEXP cumsum_exp_lpSEXP, SEXP PSEXP, SEXP betaSEXP, SEXP lambda1SEXP, SEXP lambda2SEXP, SEXP fit_interactionsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -49,47 +49,47 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Eigen::VectorXd >::type time(timeSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXd >::type lp(lpSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXd >::type cumsum_exp_lp(cumsum_exp_lpSEXP);
-    Rcpp::traits::input_parameter< const Eigen::MatrixXd >::type V(VSEXP);
-    Rcpp::traits::input_parameter< const Eigen::VectorXd >::type w(wSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd >::type P(PSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< double >::type lambda1(lambda1SEXP);
     Rcpp::traits::input_parameter< double >::type lambda2(lambda2SEXP);
     Rcpp::traits::input_parameter< bool >::type fit_interactions(fit_interactionsSEXP);
-    rcpp_result_gen = Rcpp::wrap(regularized_negative_log_likelihood(status, time, lp, cumsum_exp_lp, V, w, lambda1, lambda2, fit_interactions));
+    rcpp_result_gen = Rcpp::wrap(regularized_negative_log_likelihood(status, time, lp, cumsum_exp_lp, P, beta, lambda1, lambda2, fit_interactions));
     return rcpp_result_gen;
 END_RCPP
 }
 // shared_computations
-Rcpp::List shared_computations(const Eigen::MatrixXd& X, const Eigen::VectorXd& w, const Eigen::MatrixXd& V, bool fit_interactions);
-RcppExport SEXP _survivalfm_shared_computations(SEXP XSEXP, SEXP wSEXP, SEXP VSEXP, SEXP fit_interactionsSEXP) {
+Rcpp::List shared_computations(const Eigen::MatrixXd& X, const Eigen::VectorXd& beta, const Eigen::MatrixXd& P, bool fit_interactions);
+RcppExport SEXP _survivalfm_shared_computations(SEXP XSEXP, SEXP betaSEXP, SEXP PSEXP, SEXP fit_interactionsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type w(wSEXP);
-    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type V(VSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type P(PSEXP);
     Rcpp::traits::input_parameter< bool >::type fit_interactions(fit_interactionsSEXP);
-    rcpp_result_gen = Rcpp::wrap(shared_computations(X, w, V, fit_interactions));
+    rcpp_result_gen = Rcpp::wrap(shared_computations(X, beta, P, fit_interactions));
     return rcpp_result_gen;
 END_RCPP
 }
 // compute_gradients
-Rcpp::List compute_gradients(Eigen::MatrixXd X, Eigen::VectorXi status, Eigen::VectorXd time, Eigen::MatrixXd V, Eigen::VectorXd w, Eigen::MatrixXd& XV, Eigen::VectorXd& exp_lp, Eigen::VectorXd& cumsum_exp_lp, double lambda1, double lambda2, bool fit_interactions);
-RcppExport SEXP _survivalfm_compute_gradients(SEXP XSEXP, SEXP statusSEXP, SEXP timeSEXP, SEXP VSEXP, SEXP wSEXP, SEXP XVSEXP, SEXP exp_lpSEXP, SEXP cumsum_exp_lpSEXP, SEXP lambda1SEXP, SEXP lambda2SEXP, SEXP fit_interactionsSEXP) {
+Rcpp::List compute_gradients(Eigen::MatrixXd X, Eigen::VectorXi status, Eigen::VectorXd time, Eigen::MatrixXd P, Eigen::VectorXd beta, Eigen::MatrixXd& XP, Eigen::VectorXd& exp_lp, Eigen::VectorXd& cumsum_exp_lp, double lambda1, double lambda2, bool fit_interactions);
+RcppExport SEXP _survivalfm_compute_gradients(SEXP XSEXP, SEXP statusSEXP, SEXP timeSEXP, SEXP PSEXP, SEXP betaSEXP, SEXP XPSEXP, SEXP exp_lpSEXP, SEXP cumsum_exp_lpSEXP, SEXP lambda1SEXP, SEXP lambda2SEXP, SEXP fit_interactionsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Eigen::MatrixXd >::type X(XSEXP);
     Rcpp::traits::input_parameter< Eigen::VectorXi >::type status(statusSEXP);
     Rcpp::traits::input_parameter< Eigen::VectorXd >::type time(timeSEXP);
-    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type V(VSEXP);
-    Rcpp::traits::input_parameter< Eigen::VectorXd >::type w(wSEXP);
-    Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type XV(XVSEXP);
+    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type P(PSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type XP(XPSEXP);
     Rcpp::traits::input_parameter< Eigen::VectorXd& >::type exp_lp(exp_lpSEXP);
     Rcpp::traits::input_parameter< Eigen::VectorXd& >::type cumsum_exp_lp(cumsum_exp_lpSEXP);
     Rcpp::traits::input_parameter< double >::type lambda1(lambda1SEXP);
     Rcpp::traits::input_parameter< double >::type lambda2(lambda2SEXP);
     Rcpp::traits::input_parameter< bool >::type fit_interactions(fit_interactionsSEXP);
-    rcpp_result_gen = Rcpp::wrap(compute_gradients(X, status, time, V, w, XV, exp_lp, cumsum_exp_lp, lambda1, lambda2, fit_interactions));
+    rcpp_result_gen = Rcpp::wrap(compute_gradients(X, status, time, P, beta, XP, exp_lp, cumsum_exp_lp, lambda1, lambda2, fit_interactions));
     return rcpp_result_gen;
 END_RCPP
 }

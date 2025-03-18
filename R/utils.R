@@ -14,21 +14,21 @@ basesurv <- function(time, event, lp, times.eval = NULL){
 }
 
 
-.flatten_parameters <- function(w, V, interaction_terms) {
+.flatten_parameters <- function(beta, P, interaction_terms) {
   if (interaction_terms) {
-    return(c(w, as.vector(V)))
+    return(c(beta, as.vector(P)))
   } else {
-    return(w)
+    return(beta)
   }
 }
 
 .restore_parameters <- function(params, n_features, interaction_terms) {
   if (interaction_terms) {
-    w <- params[1:n_features]
-    V <- matrix(params[(n_features+1):length(params)], nrow = n_features)
-    return(list(w = w, V = V))
+    beta <- params[1:n_features]
+    P <- matrix(params[(n_features+1):length(params)], nrow = n_features)
+    return(list(beta = beta, P = P))
   } else {
-    return(list(w = params))
+    return(list(beta = params))
   }
 }
 
@@ -41,19 +41,19 @@ basesurv <- function(time, event, lp, times.eval = NULL){
 
   n_features <- ncol(X)
   parameters <- .restore_parameters(params, n_features, interaction_terms)
-  w <- parameters$w
-  V <- parameters$V
+  beta <- parameters$beta
+  P <- parameters$P
 
   if (!interaction_terms) {
-    V <- matrix(0, nrow = ncol(X), ncol = 1)
+    P <- matrix(0, nrow = ncol(X), ncol = 1)
   }
 
-  shared <- shared_computations(X, w, V, interaction_terms)
+  shared <- shared_computations(X, beta, P, interaction_terms)
 
-  cache$w <- w
-  cache$V <- V
+  cache$beta <- beta
+  cache$P <- P
   cache$last_params <- params
-  cache$XV <- shared$XV
+  cache$XP <- shared$XP
   cache$lp <- shared$lp
   cache$exp_lp <- shared$exp_lp
   cache$cumsum_exp_lp <- shared$cumsum_exp_lp
@@ -66,14 +66,14 @@ basesurv <- function(time, event, lp, times.eval = NULL){
 .loss_function <- function(params, X, time, status, lambda1, lambda2, interaction_terms) {
 
   shared <- .cache_shared_computations(X, params, interaction_terms)
-  w <- shared$w
-  V <- shared$V
+  beta <- shared$beta
+  P <- shared$P
   lp <- shared$lp
   cumsum_exp_lp <- shared$cumsum_exp_lp
 
-  if (!interaction_terms) {V <- matrix(0, nrow = ncol(X), ncol = 1)}
+  if (!interaction_terms) {P <- matrix(0, nrow = ncol(X), ncol = 1)}
 
-  loss <- regularized_negative_log_likelihood(status, time, lp, cumsum_exp_lp, V, w, lambda1, lambda2, interaction_terms)
+  loss <- regularized_negative_log_likelihood(status, time, lp, cumsum_exp_lp, P, beta, lambda1, lambda2, interaction_terms)
   if (is.nan(loss)) {loss <- NA}
 
   return(loss)
@@ -82,22 +82,22 @@ basesurv <- function(time, event, lp, times.eval = NULL){
 
 .gradient_function <- function(params, X, time, status, lambda1, lambda2, interaction_terms) {
   shared <- .cache_shared_computations(X, params, interaction_terms)
-  w <- shared$w
-  V <- shared$V
-  XV <- shared$XV
+  beta <- shared$beta
+  P <- shared$P
+  XP <- shared$XP
   exp_lp <- shared$exp_lp
   cumsum_exp_lp <- shared$cumsum_exp_lp
   if (interaction_terms) {
-    grads <- compute_gradients(X, status, time, V, w, XV, exp_lp, cumsum_exp_lp, lambda1, lambda2, interaction_terms)
-    grad_w <- grads$grad_w
-    grad_V <- grads$grad_V
+    grads <- compute_gradients(X, status, time, P, beta, XP, exp_lp, cumsum_exp_lp, lambda1, lambda2, interaction_terms)
+    grad_beta <- grads$grad_beta
+    grad_P <- grads$grad_P
   } else {
     V = matrix(0, nrow = ncol(X), ncol = 1)
-    grads <- compute_gradients(X, status, time, V, w, XV, exp_lp, cumsum_exp_lp, lambda1, lambda2, interaction_terms)
-    grad_w <- grads$grad_w
-    grad_V <- NULL
+    grads <- compute_gradients(X, status, time, P, beta, XP, exp_lp, cumsum_exp_lp, lambda1, lambda2, interaction_terms)
+    grad_beta <- grads$grad_beta
+    grad_P <- NULL
   }
-  grads <- .flatten_parameters(grad_w, grad_V, interaction_terms)
+  grads <- .flatten_parameters(grad_beta, grad_P, interaction_terms)
   grads[is.nan(grads)] <- NA
   return(grads)
 }
@@ -149,4 +149,33 @@ basesurv <- function(time, event, lp, times.eval = NULL){
 
   list(train = train_indices, val = val_indices)
 }
+
+
+
+.stratified_folds <- function(y, nfolds) {
+  
+  # Unique status values
+  unique_status <- unique(y)
+  
+  # Placeholder for indices in each fold
+  folds <- vector("list", nfolds)
+  for(i in seq_along(folds)) {
+    folds[[i]] <- integer(0)
+  }
+  
+  # Split indices stratified by status
+  for(status in unique_status) {
+    indices <- which(y == status)
+    set.seed(123)
+    indices <- sample(indices) # Shuffle indices
+    fold_sizes <- ceiling(length(indices) / nfolds)
+    for(i in 1:nfolds) {
+      fold_indices <- ((i-1) * fold_sizes + 1):min(i * fold_sizes, length(indices))
+      folds[[i]] <- c(folds[[i]], indices[fold_indices])
+    }
+  }
+  
+  return(folds)
+}
+
 
