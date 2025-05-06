@@ -23,7 +23,7 @@ The software has been tested with R version 4.3.1.
 
 *survivalFM* is described in the following manuscript:
 
-Heli Julkunen and Juho Rousu. "Machine learning for comprehensive interaction modelling improves disease risk prediction in UK Biobank" (2024).
+Heli Julkunen and Juho Rousu. "Machine learning for comprehensive interaction modelling improves disease risk prediction in UK Biobank" (2025).
 
 ## Usage example
 
@@ -93,7 +93,7 @@ fit <- survivalfm::val.survivalfm(
   x = X_train_scaled,
   y = y_train,
   rank = 3,
-  trace = T,
+  trace = 1,
   parallel = TRUE
 )
 
@@ -116,7 +116,7 @@ fit <- survivalfm::cv.survivalfm(
   x = X_train_scaled,
   y = y_train,
   rank = 3,
-  trace = T,
+  trace = 1,
   parallel = TRUE
 )
 
