@@ -86,9 +86,6 @@ beforehand. Default is \code{FALSE}.}
 
 \item{optimization_method}{The optimization method used by
 \code{stats::optim}. Default is "BFGS".}
-
-\item{early_stopping}{Stop early if further decreasing lambda2 does not
-improve performance (default = TRUE).}
 }
 \value{
 Returns an object of class \code{"cv.survivalfm"}. It is a list

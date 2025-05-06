@@ -54,8 +54,6 @@
 #' @param lambda2_range Custom range of values for the regularization parameter
 #'   \code{lambda2} to be optimized (regularization for the factorized
 #'   interaction terms; optional).
-#' @param early_stopping Stop early if further decreasing lambda2 does not
-#'    improve performance (default = TRUE).
 #' @param maxiter Maximum number of iterations over the data for all
 #'   regularization parameter values. Default is 1000.
 #' @param reltol Relative convergence tolerance for the optimization method in
