@@ -1,10 +1,11 @@
 Package: survivalfm
-Title: survivalFM
+Title: Efficient modelling of interaction effects in proportional hazards survival models. 
 Version: 1.0.0
-Authors@R: 
-    person("Heli", "Julkunen", , "heli.julkunen@aalto.fi", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0002-4282-0248"))
-Description: Efficient modelling of linear and pairwise interaction terms in proportional hazards survival models using factorized parametrization for interaction terms.
+Date: 2025-05-01
+Authors@R: c(person("Heli", "Julkunen", , "heli.julkunen@aalto.fi", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-4282-0248")),
+            person("Juho", "Rousu", role = c("aut")))
+Description: Efficient modelling of linear and pairwise interaction effects in proportional hazards survival models using factorized parametrization for interaction terms.
 Imports: utils, stats, foreach, survival, Rcpp
 NeedsCompilation: yes
 License: MIT + file LICENSE
