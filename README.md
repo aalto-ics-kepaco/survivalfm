@@ -4,7 +4,7 @@
 
 *survivalFM* is an R package designed for efficient modelling of linear and all potential pairwise interaction effects among input predictors in proportional hazards survival models. 
 
-*survivalFM* relies on learning a low-rank factorized representation of the interaction terms, hence overcoming the computational and statistical limitations of directly fitting these terms in the presence of many input variables. The factorization of the interaction parameters, together with an efficient quasi-Newton optimization algorithm, facilitates a systematic exploration of all potential interaction effects in multivariable time-to-event prediction models involving many predictors.  The resulting model is fully interpretable, providing  access to both individual feature coefficients and those of the approximated interaction terms. 
+*survivalFM* relies on learning a low-rank factorized representation of the interaction terms, hence overcoming the computational and statistical limitations of directly fitting these terms in the presence of many input predictors. The factorization of the interaction parameters, together with an efficient quasi-Newton optimization algorithm, facilitates a systematic exploration of all potential interaction effects in multivariable time-to-event prediction models involving many predictors.  The resulting model is fully interpretable, providing  access to both individual feature coefficients and those of the approximated interaction terms. 
 
 
 ## Installation
