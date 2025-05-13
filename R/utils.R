@@ -175,7 +175,15 @@ basesurv <- function(time, event, lp, times.eval = NULL){
     }
   }
   
-  return(folds)
+  n <- max(unlist(folds))
+  foldid <- integer(n)
+  
+  for (i in seq_along(folds)) {
+    foldid[folds[[i]]] <- i
+  }
+  
+  return(foldid)
 }
+
 
 

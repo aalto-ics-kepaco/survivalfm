@@ -137,7 +137,7 @@ cv.survivalfm <- function(
   param_combinations <- param_combinations[order(-(param_combinations$lambda1 + param_combinations$lambda2)),]
   
   if (is.null(foldid)) {
-    folds <- .stratified_folds(y[,"status"], nfolds)
+    foldid <- .stratified_folds(y[,"status"], nfolds)
   }
   
   if (trace == 1) {
@@ -154,10 +154,10 @@ cv.survivalfm <- function(
     
     param_comb <- param_combinations[param_idx,]
     
-    fold_results <- foreach(fold_idx = seq_along(folds), .combine = 'rbind', .packages = c("survival", "survivalfm")) %dopar% {
+    fold_results <- foreach(fold_idx = seq_len(nfolds), .combine = 'rbind', .packages = c("survival", "survivalfm")) %dopar% {
       
-      val_idx <- folds[[fold_idx]]
-      train_idx <- setdiff(1:nrow(x), val_idx)
+      train_idx <- which(foldid != fold_idx)
+      val_idx   <- which(foldid == fold_idx)
       
       fit <- survivalfm(
         x = x[train_idx, ],
