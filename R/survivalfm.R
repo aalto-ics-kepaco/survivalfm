@@ -17,7 +17,10 @@
 #' @param trace If trace=1, will display messages of the progress.
 #' @param optimization_method The optimization method used by
 #'   \code{stats::optim}. Default is "BFGS".
-#'
+#' @param seed Optional integer. If provided, sets the random seed for
+#'   reproducible parameter initialization. If NULL, random initialization is
+#'   used.
+#' 
 #' @return Returns an object of class \code{"survivalfm"}. It is a list
 #'   containing the coefficients of the fitted model \code{beta} (linear effects)
 #'   and \code{P} (factorized interaction parameter matrix). Returns also the
@@ -36,7 +39,8 @@ survivalfm <- function(
     maxiter = 1000,
     reltol = sqrt(.Machine$double.eps),
     trace = 0,
-    optimization_method = "BFGS"
+    optimization_method = "BFGS",
+    seed = NULL
     ) {
 
   inputs <- .process_input(x, y)
@@ -48,6 +52,11 @@ survivalfm <- function(
 
   n_features <- ncol(X)
 
+  # Set seed if provided
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
+  
   # Initialize parameters
   beta <- matrix(stats::rnorm(n_features, mean = 0, sd = 0.001), nrow = n_features, ncol = 1)
   P <- if (interaction_terms) matrix(stats::rnorm(n_features * rank, mean = 0, sd = 0.001), nrow = n_features, ncol = rank)
