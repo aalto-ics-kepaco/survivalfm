@@ -64,7 +64,10 @@
 #' @param trace If trace=1, will display messages of the progress.
 #' @param optimization_method The optimization method used by
 #'   \code{stats::optim}. Default is "BFGS".
-#'
+#' @param seed Optional integer. If provided, sets the random seed for
+#'   reproducible parameter initialization. If NULL, random initialization is
+#'   used.
+#'   
 #' @return Returns an object of class \code{"cv.survivalfm"}. It is a list
 #'   containing the coefficients of the final fitted model \code{beta} (linear
 #'   effects) and \code{P} (factorized interaction parameter matrix). Returns
@@ -99,7 +102,9 @@ cv.survivalfm <- function(
     reltol = sqrt(.Machine$double.eps),
     parallel = FALSE,
     trace = 0,
-    optimization_method = "BFGS") {
+    optimization_method = "BFGS",
+    seed = NULL
+    ) {
   
   if (parallel) {
     if (!requireNamespace("foreach", quietly = TRUE)) {
@@ -168,7 +173,8 @@ cv.survivalfm <- function(
         trace = 0,
         maxiter = maxiter,
         reltol = reltol,
-        optimization_method = optimization_method
+        optimization_method = optimization_method,
+        seed = seed
       )
       
       lp <- predict.survivalfm(fit, as.matrix(x[val_idx,]), type = "link")
@@ -221,7 +227,8 @@ cv.survivalfm <- function(
     trace = 0,
     maxiter = maxiter,
     reltol = reltol,
-    optimization_method = optimization_method
+    optimization_method = optimization_method,
+    seed = seed
   )
   
   return(
