@@ -21,9 +21,8 @@ The software has been tested with R version 4.3.1.
 
 ## Citation
 
-*survivalFM* is described in the following manuscript:
+Julkunen, H., & Rousu, J. (2025). Comprehensive interaction modeling with machine learning improves prediction of disease risk in the UK Biobank. Nature Communications, 16(1), 6620.
 
-Heli Julkunen and Juho Rousu. "Machine learning for comprehensive interaction modelling improves disease risk prediction in UK Biobank" (2025).
 
 ## Usage example
 
